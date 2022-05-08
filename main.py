@@ -73,13 +73,30 @@ class getTweet():
         obj_j=json.loads(obj_r.text)
         try:
             self.str_top_tweet=obj_j['data']['user']['result']['timeline_v2']['timeline']['instructions'][1]['entries'][0]['content']['itemContent']['tweet_results']['result']['legacy']['full_text'] # top tweet
+            self.str_top_tweet
+            self.strip_top_tweet_text_for_tcl()
         except Exception as e:
             print e
 
         try:
             self.str_pinned_tweet=obj_j['data']['user']['result']['timeline_v2']['timeline']['instructions'][2]['entry']['content']['itemContent']['tweet_results']['result']['legacy']['full_text'] # pinned tweet
+            self.str_pinned_tweet
+            self.strip_pinned_tweet_text_for_tcl()
         except Exception as e:
             print e
+
+    def strip_text_for_tcl(self,str_text): 
+        char_list = [str_text[i] for i in range(len(str_text)) if ord(str_text[i]) in range(65536)]
+        str_text=''
+        for i in char_list:
+            str_text=str_text+i
+        return str_text
+
+    def strip_top_tweet_text_for_tcl(self): # Unicode range that Tcl allow is from U+0000 to U+FFFF. In other words, It can't use Emoji. So, It remove that characters.
+        self.str_top_tweet=self.strip_text_for_tcl(self.str_top_tweet)
+
+    def strip_pinned_tweet_text_for_tcl(self): # Unicode range that Tcl allow is from U+0000 to U+FFFF. In other words, It can't use Emoji. So, It remove that characters.
+        self.str_pinned_tweet=self.strip_text_for_tcl(self.str_pinned_tweet)
 
     def get_str_top_tweet(self):
         return self.str_top_tweet
@@ -95,6 +112,7 @@ def notify(title,text):
     obj_notify.setButton()
     obj_notify.wavplay()
     obj_notify.start()
+
 def main():
     str_user_name=sys.argv[1]
     obj_get_tweet=getTweet(str_user_name)
