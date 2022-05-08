@@ -5,8 +5,10 @@ import os
 import json
 import urllib
 import sys
+import threading
 import time
 import requests
+from bs4 import BeautifulSoup
 sys.path.append(os.environ['TOOLS_DIR'])
 
 import Notify
@@ -16,14 +18,14 @@ sys.setdefaultencoding('utf-8')
 
 class getTweet():
     def __init__(self,str_user_name):
-        self.str_user_name=str_user_name
+        self.str_user_name = str_user_name
         self.init()
 
     def init(self):
-        self.str_main_js_url="https://abs.twimg.com/responsive-web/client-web/main.99efbbf6.js" # There is Bearer Token in this js file.
-        self.str_activate_json_url="https://api.twitter.com/1.1/guest/activate.json" # There is x-guest-token in this file. But this file need Bearer Token.
+        self.str_main_js_url = "https://abs.twimg.com/responsive-web/client-web/main.99efbbf6.js" # There is Bearer Token in this js file.
+        self.str_activate_json_url = "https://api.twitter.com/1.1/guest/activate.json" # There is x-guest-token in this file. But this file need Bearer Token.
 
-        self.str_bearer_token=''
+        self.str_bearer_token = ''
         self.get_str_bearer_token()
 
         self.headers={}
@@ -31,22 +33,22 @@ class getTweet():
 
         print self.headers
 
-        self.str_x_guest_token=''
+        self.str_x_guest_token = ''
         self.get_str_x_guest_token()
 
         self.headers['x-guest-token']=self.str_x_guest_token
         print self.headers
 
         obj_j=json.loads('{"screen_name":"%s","withSafetyModeUserFields":true,"withSuperFollowsUserFields":true}'%(self.str_user_name))
-        self.str_user_by_screen_name_url="https://twitter.com/i/api/graphql/Bhlf1dYJ3bYCKmLfeEQ31A/UserByScreenName?variables="+urllib.quote(json.dumps(obj_j)) # This is needed for getting id or rest_id by username.
+        self.str_user_by_screen_name_url = "https://twitter.com/i/api/graphql/Bhlf1dYJ3bYCKmLfeEQ31A/UserByScreenName?variables="+urllib.quote(json.dumps(obj_j)) # This is needed for getting id or rest_id by username.
         print "str_user_by_screen_name_url:",self.str_user_by_screen_name_url
 
-        self.str_user_id=''
+        self.str_user_id = ''
         self.get_str_user_id()
         print "str_user_id:",self.str_user_id
 
         obj_j=json.loads('{"userId":"%s","count":40,"includePromotedContent":true,"withQuickPromoteEligibilityTweetFields":true,"withSuperFollowsUserFields":true,"withDownvotePerspective":false,"withReactionsMetadata":false,"withReactionsPerspective":false,"withSuperFollowsTweetFields":true,"withVoice":true,"withV2Timeline":true,"__fs_responsive_web_like_by_author_enabled":false,"__fs_dont_mention_me_view_api_enabled":true,"__fs_interactive_text_enabled":true,"__fs_responsive_web_uc_gql_enabled":false,"__fs_responsive_web_edit_tweet_api_enabled":false}'%(self.str_user_id)) # This userId is rest_id from UserBySceenName.
-        self.str_user_tweets_url="https://twitter.com/i/api/graphql/07VfD4dpV9RcW5dsbCjYuQ/UserTweets?variables="+urllib.quote(json.dumps(obj_j))
+        self.str_user_tweets_url = "https://twitter.com/i/api/graphql/07VfD4dpV9RcW5dsbCjYuQ/UserTweets?variables="+urllib.quote(json.dumps(obj_j))
         print "str_user_tweets_url:",self.str_user_tweets_url
         self.str_top_tweet=''
         self.str_pinned_tweet=''
