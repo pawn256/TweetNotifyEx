@@ -69,6 +69,7 @@ class getTweet():
         self.str_user_id=obj_j['data']['user']['result']['rest_id']
 
     def get_tweets(self): # User id is rest_id.
+        self.init()
         obj_r=requests.get(self.str_user_tweets_url,headers=self.headers)
         obj_j=json.loads(obj_r.text)
         try:
